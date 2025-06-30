@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: email-api-demo
+  profiles:
+    default: dev

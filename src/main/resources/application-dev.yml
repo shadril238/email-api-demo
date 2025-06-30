@@ -1,0 +1,98 @@
+server:
+  port: 8079
+
+spring:
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=EMAIL_GATEWAY;encrypt=false;trustServerCertificate=true
+    username: sa
+    password: Sh@dril2024!
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.SQLServerDialect
+        format_sql: true
+    hibernate:
+      ddl-auto: none
+      naming:
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: shadril
+    password: shadril
+    virtual-host: /
+    listener:
+      simple:
+        acknowledge-mode: manual
+        prefetch: 2
+    stream:
+      virtual-host:
+  threads:
+    virtual:
+      enabled: false
+
+#rabbitmq config
+rabbitmq:
+  config:
+    email-exchange: "email.exchange.dev"
+    email-queue: "email.queue.dev"
+    email-routing-key: "email.routing.key.dev"
+
+    email-dlx: "email.dlx.dev"
+    email-queue-retry: "email.queue.retry.dev"
+    email-retry-routing-key: "email.retry.routing.key.dev"
+
+    email-queue-dlq: "email.queue.dlq.dev"
+    email-dlq-routing-key: "email.dlq.routing.key.dev"
+
+    email-queue-scheduled: "email.queue.scheduled.dev"
+    email-scheduled-routing-key: "email.scheduled.routing.key.dev"
+
+    email-min-priority: 0
+    email-max-priority: 5
+
+    email-max-retries: 3
+    email-message-ttl: 20000
+
+    concurrent-consumers: 2
+    max-concurrent-consumers: 5
+    consumer-start-timeout: 180000 # 180 seconds
+    start-consumer-min-interval: 2000 # 2-second delay
+    recovery-interval: 5000 # Retry every 5 seconds
+    prefetch-count: 20
+
+#logging
+logging:
+  level:
+    org.hibernate.SQL: ERROR
+    org.hibernate.type.descriptor.sql.BasicBinder: ERROR
+    org.springframework.jdbc.core: ERROR
+    org.springframework.jdbc.core.StatementCreatorUtils: ERROR
+    org.springframework.amqp: ERROR
+    org.springframework.rabbit: ERROR
+    com.shadril.email_api_demo: DEBUG
+    jakarta.mail: INFO
+
+#smtp config
+smtp:
+  host: smtp.gmail.com
+  port: 587
+  username: shadril238@gmail.com
+  password: wsehnkpfrtdddjxb
+  protocol: smtp
+  auth: true
+  tls: true
+  encoding: UTF-8
+
+email:
+  log-batch-interval: 5000 # 5 seconds
