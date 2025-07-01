@@ -34,7 +34,7 @@ public class EmailMessageConsumer {
         try {
             processMessage(message, channel);
         } catch (IOException e) {
-            log.error("Error processing message in virtual thread", e);
+            log.error("Error processing message", e);
         }
     }
 
