@@ -27,10 +27,6 @@ The Email API is designed to send both single and bulk emails via REST endpoints
 - **Springdoc OpenAPI** – Swagger UI integration.
 
 
----
-
-## 📸 Screenshots
-
 
 
 
