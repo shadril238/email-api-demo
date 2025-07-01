@@ -1,5 +1,6 @@
 package com.shadril.email_api_demo.controller;
 
+import com.shadril.email_api_demo.annotation.RequireBasicAuth;
 import com.shadril.email_api_demo.dto.request.EmailRequest;
 import com.shadril.email_api_demo.dto.response.ResponseDto;
 import com.shadril.email_api_demo.producer.EmailMessageProducer;
@@ -25,6 +26,7 @@ public class EmailController {
     private final EmailMessageProducer emailProducer;
 
     @PostMapping
+    @RequireBasicAuth
     public ResponseEntity<ResponseDto<Object, List<Map<String, String>>>> sendEmail(
             @Valid @RequestBody EmailRequest emailRequest) {
 

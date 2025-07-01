@@ -13,80 +13,82 @@ import java.util.Map;
 @Aspect
 @Component
 @Slf4j
-public class LoggingAspect {
+public class MQLogAspect {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Around("execution(* com.shadril.email_api_demo.producer.EmailMessageProducer.*(..)) || " +
-            "execution(* com.shadril.email_api_demo.consumer.EmailMessageConsumer.*(..))")
-    public Object logAroundMethodExecution(ProceedingJoinPoint joinPoint) throws Throwable {
+    @Around("execution(* com.shadril.email_api_demo.producer..*(..)) || execution(* com.shadril.email_api_demo.consumer..*(..))")
+    public Object logAroundExecution(ProceedingJoinPoint joinPoint) throws Throwable {
         long startTime = System.nanoTime();
         String threadName = Thread.currentThread().getName();
 
         Map<String, Object> logDetails = new HashMap<>();
         logDetails.put("thread", threadName);
         logDetails.put("method", joinPoint.getSignature().toShortString());
-        logDetails.put("arguments", serializeArguments(joinPoint.getArgs()));
+
+        try {
+            logDetails.put("arguments", serializeArguments(joinPoint.getArgs()));
+        } catch (Exception e) {
+            logDetails.put("arguments", "Argument serialization failed: " + e.getMessage());
+        }
 
         log.info("Method Execution Started: {}", toJson(logDetails));
 
         Object result = null;
         try {
             result = joinPoint.proceed();
+            return result;
         } catch (Throwable ex) {
             logDetails.put("exception", ex.getClass().getSimpleName() + ": " + ex.getMessage());
             log.error("Method Execution Failed: {}", toJson(logDetails), ex);
             throw ex;
+        } finally {
+            long duration = (System.nanoTime() - startTime) / 1_000_000; // ms
+            logDetails.put("executionTimeMs", duration);
+            logDetails.put("result", serializeResult(result));
+
+            log.info("Method Execution Completed: {}", toJson(logDetails));
         }
-
-        long duration = (System.nanoTime() - startTime) / 1_000_000; // in ms
-        logDetails.put("result", serializeResult(result));
-        logDetails.put("executionTimeMs", duration);
-
-        log.info("Method Execution Completed: {}", toJson(logDetails));
-        return result;
     }
 
     private String serializeArguments(Object[] args) {
-        StringBuilder builder = new StringBuilder("[");
+        StringBuilder sb = new StringBuilder("[");
         for (int i = 0; i < args.length; i++) {
             Object arg = args[i];
-            try {
-                if (arg instanceof org.springframework.amqp.core.Message) {
-                    builder.append("\"<Skipped org.springframework.amqp.core.Message>\"");
-                } else {
-                    builder.append(objectMapper.writeValueAsString(arg));
+            if (arg instanceof org.springframework.amqp.core.Message) {
+                sb.append("\"<Skipped: org.springframework.amqp.core.Message>\"");
+            } else {
+                try {
+                    sb.append(objectMapper.writeValueAsString(arg));
+                } catch (Exception e) {
+                    sb.append("{\"type\":\"")
+                            .append(arg != null ? arg.getClass().getSimpleName() : "null")
+                            .append("\",\"toString\":\"")
+                            .append(safeToString(arg))
+                            .append("\"}");
                 }
-            } catch (Exception e) {
-                builder.append("{\"type\":\"")
-                        .append(arg.getClass().getSimpleName())
-                        .append("\",\"toString\":\"")
-                        .append(safeToString(arg))
-                        .append("\"}");
             }
-            if (i < args.length - 1) {
-                builder.append(",");
-            }
+            if (i < args.length - 1) sb.append(",");
         }
-        builder.append("]");
-        return builder.toString();
+        sb.append("]");
+        return sb.toString();
     }
 
     private String serializeResult(Object result) {
         if (result == null) return "null";
         try {
             return objectMapper.writeValueAsString(result);
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             return "{\"type\":\"" + result.getClass().getSimpleName() +
                     "\",\"toString\":\"" + safeToString(result) + "\"}";
         }
     }
 
-    private String toJson(Map<String, Object> map) {
+    private String toJson(Object obj) {
         try {
-            return objectMapper.writeValueAsString(map);
+            return objectMapper.writeValueAsString(obj);
         } catch (JsonProcessingException e) {
-            return "{\"error\": \"Failed to serialize log details: " + e.getMessage() + "\"}";
+            return "{\"error\":\"Failed to serialize to JSON: " + e.getMessage() + "\"}";
         }
     }
 

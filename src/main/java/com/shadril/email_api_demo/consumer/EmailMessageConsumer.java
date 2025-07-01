@@ -2,12 +2,10 @@ package com.shadril.email_api_demo.consumer;
 
 import com.rabbitmq.client.Channel;
 import com.shadril.email_api_demo.config.RabbitMQConfig;
-import com.shadril.email_api_demo.config.SmtpConfig;
 import com.shadril.email_api_demo.dto.SmtpDetails;
 import com.shadril.email_api_demo.dto.request.EmailDto;
 import com.shadril.email_api_demo.dto.response.ResponseDto;
 import com.shadril.email_api_demo.util.EmailUtil;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;

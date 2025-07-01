@@ -24,6 +24,12 @@ public class GlobalExceptionHandler {
         return ResponseBuilder.error(HttpStatus.BAD_GATEWAY.value(), ex.getMessage());
     }
 
+    @ExceptionHandler(UnauthorizedAccessException.class)
+    public ResponseEntity<ResponseDto<String, String>> handleUnauthorizedAccessException(UnauthorizedAccessException ex) {
+        log.error("Unauthorized access: {}", ex.getMessage());
+        return ResponseBuilder.error(HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ResponseDto<String, String>> handleGeneralException(Exception ex) {
         log.error("An unexpected error occurred: {}", ex.getMessage(), ex);

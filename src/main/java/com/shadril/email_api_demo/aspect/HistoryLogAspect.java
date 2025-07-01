@@ -6,6 +6,7 @@ import com.shadril.email_api_demo.dto.request.EmailDto;
 import com.shadril.email_api_demo.dto.request.EmailRequest;
 import com.shadril.email_api_demo.dto.request.SchedulingDetailsDto;
 import com.shadril.email_api_demo.event.HistoryLogEvent;
+import com.shadril.email_api_demo.util.AesUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Component;
 public class HistoryLogAspect {
 
     private final ApplicationEventPublisher eventPublisher;
+    private final AesUtil aesUtil;
 
     @Pointcut("@annotation(com.shadril.email_api_demo.annotation.LogEmail)")
     public void logEmailPointcut() {
@@ -45,11 +47,11 @@ public class HistoryLogAspect {
                         emailDto.setPriority(priority);
                         emailDto.setScheduled(isScheduled);
                         emailDto.setSchedulingDetails(schedulingDetails);
-                        emailDto.setSubject(baseEmailDto.getSubject());
+                        emailDto.setSubject(aesUtil.encrypt(baseEmailDto.getSubject()));
                         emailDto.setRecipients(baseEmailDto.getRecipients());
                         emailDto.setCcRecipients(baseEmailDto.getCcRecipients());
                         emailDto.setBccRecipients(baseEmailDto.getBccRecipients());
-                        emailDto.setContent(baseEmailDto.getContent());
+                        emailDto.setContent(aesUtil.encrypt(baseEmailDto.getContent()));
                         emailDto.setInlineContent(baseEmailDto.getInlineContent());
                         emailDto.setFileAttachments(baseEmailDto.getFileAttachments());
 

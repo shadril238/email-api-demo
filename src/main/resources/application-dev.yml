@@ -96,3 +96,7 @@ smtp:
 
 email:
   log-batch-interval: 5000 # 5 seconds
+
+encryption:
+  aes:
+    key: "uA8RvQ93G73SxA2gM8jK5sA2f7LzU81v"
